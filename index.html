@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yamid González — Ingeniería, Ciberseguridad, IA</title>
 <style>
   @font-face {
@@ -206,6 +207,10 @@
     align-items: center;
     padding: 120px 28px 80px;
     overflow: hidden;
+  }
+  @media (max-width: 720px) {
+    /* the heart gets its own reserved zone below the text — never a guess, never an overlap */
+    .hero { align-items: flex-start; min-height: auto; padding: 108px 24px 300px; }
   }
   #epicycle-canvas {
     position: absolute;
@@ -1033,7 +1038,12 @@
 
     var cx = W * 0.72, cy = H * 0.46;
     var scale = Math.min(W, H) * 0.018;
-    if (W < 720) { cx = W * 0.5; cy = H * 0.62; scale = Math.min(W,H) * 0.016; }
+    if (W < 720) {
+      // reserved 300px zone below the text (see .hero padding-bottom on mobile) — heart lives there, always
+      cx = W * 0.5;
+      cy = H - 185;
+      scale = 6.2;
+    }
 
     glowT += 0.025;
     if (glowT > 1000) glowT -= 1000;
@@ -1096,7 +1106,7 @@
     // static: draw full path once
     tParam = 0;
     var cx0 = W*0.72, cy0 = H*0.46, scale0 = Math.min(W,H)*0.018;
-    if (W < 720) { cx0 = W*0.5; cy0 = H*0.62; scale0 = Math.min(W,H)*0.016; }
+    if (W < 720) { cx0 = W*0.5; cy0 = H - 185; scale0 = 6.2; }
     drawPillarIcons(cx0, cy0, scale0, 0.4);
     var full = [];
     for (var s = 0; s <= N; s++) {
