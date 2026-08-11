@@ -240,6 +240,25 @@
   }
   .hero-sub strong { color: var(--fg); font-weight: 600; }
   .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .motion-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.03em;
+    color: var(--fg-muted);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 4px;
+  }
+  .motion-toggle:hover { color: var(--accent); text-decoration-color: var(--accent); }
+  .motion-toggle[hidden] { display: none; }
   .btn {
     font-family: var(--font-mono);
     font-size: 0.82rem;
@@ -442,6 +461,7 @@
       <a href="#ctf" class="btn primary">Ver trayectoria en CTFs</a>
       <a href="#contacto" class="btn">Contactar</a>
     </div>
+    <button type="button" id="motionToggle" class="motion-toggle" hidden>▶ Reproducir animación del corazón</button>
   </div>
   <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
 </section>
@@ -1127,9 +1147,19 @@
     ctx.stroke();
   }
 
+  var rafId = null;
+  var manuallyPlaying = false; // explicit opt-in override of the OS's reduced-motion preference
+  function startLoop(){
+    if (rafId) return;
+    (function loop(){ drawFrame(); rafId = requestAnimationFrame(loop); })();
+  }
+  function stopLoop(){
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
   function handleResize(){
     resize();
-    if (reduced) drawStatic();
+    if (reduced && !manuallyPlaying) drawStatic();
   }
   window.addEventListener('resize', handleResize);
 
@@ -1143,8 +1173,26 @@
     window.addEventListener('load', handleResize);
     setTimeout(handleResize, 400);
     setTimeout(handleResize, 1200);
+
+    // your system asks for reduced motion, so it's off by default — this is
+    // an explicit, reversible opt-in, not a second automatic animation path.
+    var toggleBtn = document.getElementById('motionToggle');
+    if (toggleBtn) {
+      toggleBtn.hidden = false;
+      toggleBtn.addEventListener('click', function(){
+        manuallyPlaying = !manuallyPlaying;
+        if (manuallyPlaying) {
+          toggleBtn.textContent = '⏸ Pausar animación del corazón';
+          startLoop();
+        } else {
+          stopLoop();
+          toggleBtn.textContent = '▶ Reproducir animación del corazón';
+          drawStatic();
+        }
+      });
+    }
   } else {
-    (function loop(){ drawFrame(); requestAnimationFrame(loop); })();
+    startLoop();
   }
 })();
 </script>
