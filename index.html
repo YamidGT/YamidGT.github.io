@@ -843,7 +843,6 @@
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  window.addEventListener('resize', resize);
   resize();
 
   // heart parametric path
@@ -1102,8 +1101,9 @@
     if (tParam > Math.PI * 2 * 3) { tParam = 0; }
   }
 
-  if (reduced) {
-    // static: draw full path once
+  function drawStatic(){
+    // static: draw full path once, from scratch, using whatever W/H are current right now
+    ctx.clearRect(0, 0, W, H);
     tParam = 0;
     var cx0 = W*0.72, cy0 = H*0.46, scale0 = Math.min(W,H)*0.018;
     if (W < 720) { cx0 = W*0.5; cy0 = H - 185; scale0 = 6.2; }
@@ -1125,6 +1125,24 @@
     ctx.strokeStyle = colorAmber(0.85);
     ctx.lineWidth = 2;
     ctx.stroke();
+  }
+
+  function handleResize(){
+    resize();
+    if (reduced) drawStatic();
+  }
+  window.addEventListener('resize', handleResize);
+
+  if (reduced) {
+    drawStatic();
+    // layout can still shift after this point (webfonts swapping in, scrollbars
+    // appearing) — canvas.width assignment in resize() wipes the bitmap, so
+    // anything that resizes without repainting leaves it blank until reload.
+    // Repaint defensively on every signal that the hero's box might have moved.
+    if (document.fonts && document.fonts.ready) { document.fonts.ready.then(handleResize); }
+    window.addEventListener('load', handleResize);
+    setTimeout(handleResize, 400);
+    setTimeout(handleResize, 1200);
   } else {
     (function loop(){ drawFrame(); requestAnimationFrame(loop); })();
   }
